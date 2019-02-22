@@ -25,7 +25,7 @@ SECRET_KEY = '^i9dv%!^apd*^d+&n&x0ij%5jzo5-7(+rre@k+k-u=_nndy(q2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
+    'channels',
+    'devices',
+    'events',
+    'automations',
+    'snmp',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'domino.wsgi.application'
 
+ASGI_APPLICATION = 'domino.routing.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
