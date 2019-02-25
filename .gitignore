@@ -1,4 +1,4 @@
 /env/
-/domino/static/
+/static/
 secrets.py
 *.pyc
