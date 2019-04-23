@@ -10,10 +10,11 @@ from pysnmp.hlapi import *
 import json,time
 
 @shared_task
-def poll(polling_config_id): #pass polling config info into this task
-    config = PollingConfig.objects.get(pk=polling_config_id)
-    devices = config.devices.all()
+def poll(protocol_config_id): #pass polling config info into this task
+    config = ProtocolConfig.objects.get(pk=protocol_config_id)
+    devices = config.group.device_set.all()
     for device in devices:
+        print(device,': ',device.id)
         group(burst.s(
         device.id,
         device.ip_address,
@@ -22,9 +23,14 @@ def poll(polling_config_id): #pass polling config info into this task
         address.name,
         address.address)
         for address in config.address_set.all())()
+    keep = Measure.objects.filter(
+        device__in=devices).order_by(
+        '-time_stamp')[:config.max_polls].values_list("id", flat=True)
+    Measure.objects.exclude(pk__in=list(keep)).delete()
+
     
 @shared_task
-def burst(device_id,ip_address,port,community_string,name,oid):
+def burst(device_id,ip_address,port,community_string,key,oid):
     errorIndication, errorStatus, errorIndex, varBinds = next(
         getCmd(SnmpEngine(),
                CommunityData(community_string, mpModel=0),
@@ -40,8 +46,8 @@ def burst(device_id,ip_address,port,community_string,name,oid):
                             errorIndex and varBinds[int(errorIndex) - 1][0] or '?')
     else:
         oid,value = varBinds[0]
-        measure = Measure(device_id=device_id, name=name, value=value)
-        measure.save()
+    measure = Measure(device_id=device_id, key=key, value=value)
+    measure.save()
     return str(ip_address) + ': ' + str(value)
 
 @shared_task

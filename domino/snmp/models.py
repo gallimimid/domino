@@ -6,9 +6,10 @@ import uuid
 class ProtocolConfig(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    device_group = models.ForeignKey('devices.DeviceGroup', on_delete=models.CASCADE)
+    group = models.ForeignKey('devices.Group', on_delete=models.CASCADE)
     port = models.IntegerField(default=161,validators=[MinValueValidator(1),MaxValueValidator(65535)])
     community_string = models.CharField(max_length=128)
+    max_polls = models.IntegerField(default=100,validators=[MinValueValidator(1),MaxValueValidator(1000)])
     periodic_task = models.OneToOneField(PeriodicTask,on_delete=models.CASCADE,null=True)
     
     def __str__(self):

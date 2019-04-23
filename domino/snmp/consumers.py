@@ -4,7 +4,6 @@ import json
 
 class SnmpConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # Join room group
         await self.accept()
 
     async def disconnect(self, close_code):
