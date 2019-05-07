@@ -6,7 +6,7 @@ import uuid
 class VmomiConfig(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    group = models.ForeignKey('devices.Group', on_delete=models.CASCADE)
+    group = models.OneToOneField('devices.Group', on_delete=models.CASCADE,null=True)
     port = models.IntegerField(default=443,validators=[MinValueValidator(1),MaxValueValidator(65535)])
     user = models.CharField(max_length=64)
     password = models.CharField(max_length=64)
@@ -21,11 +21,21 @@ class VmomiConfig(models.Model):
             return str(self.id)
 
 class EndPoint(models.Model):
+    VIM_TYPE_CHOICES = (
+        ('Datacenter','Datacenter'),
+        ('ClusterComputeResource','ClusterComputeResource'),
+        ('HostSystem','HostSystem'),
+        ('VirtualMachine','VirtualMachine'),
+        ('Datastore','Datastore'),
+        ('ResourcePool','ResourcePool'),
+        ('Folder','Folder'),
+        ('Network','Network'),
+    )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     vmomi_config = models.ForeignKey(VmomiConfig, on_delete=models.CASCADE)
-    key = models.CharField(max_length=128)
-    vim_type = models.CharField(max_length=128)
+    key = models.ForeignKey('events.Key', on_delete=models.CASCADE,null=True)
+    vim_type = models.CharField(max_length=22,choices=VIM_TYPE_CHOICES)
     attribute = models.CharField(max_length=128)
 
     def __str__(self):
-        return self.name
+        return str(self.key)

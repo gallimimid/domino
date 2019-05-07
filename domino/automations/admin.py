@@ -67,10 +67,10 @@ class EffectTaskForm(forms.ModelForm):
         data = super(EffectTaskForm, self).clean()
         task_effect = data.get('task_effect')
         if task_effect:
-            data['task'] = task_effect
-        if not data['task']:
+            data['effect'] = task_effect
+        if not data['effect']:
             exc = forms.ValidationError(_('Need name of task'))
-            self._errors['task'] = self.error_class(exc.messages)
+            self._errors['effect'] = self.error_class(exc.messages)
             raise exc
         return data
 

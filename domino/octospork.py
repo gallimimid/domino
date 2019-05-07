@@ -1,7 +1,7 @@
 """
 vSphere Python SDK methods for automating virtual environments
 """
-from pyvim.connect import SmartConnect, Disconnect
+from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim, vmodl
 from pysnmp.hlapi import *
 
@@ -10,35 +10,22 @@ import atexit
 import getpass
 import sys,time
 import smtplib,ssl
-import settings
 
+
+def reduce(function, iterable, initializer=None):
+    it = iter(iterable)
+    if initializer is None:
+        value = next(it)
+    else:
+        value = initializer
+    for element in it:
+        value = function(value, element)
+    return value
 
 def deepgetattr(obj, attr):
     """Recurses through an attribute chain to get the ultimate value."""
     return reduce(getattr, attr.split('.'), obj)
 
-def send_email(subject, message = ''):
-    print(subject)
-    print(message)
-
-    sender = settings.EMAIL_FROM
-    recipients = settings.EMAIL_TO
-    recipient_str = ''.join('<' + recipient + '>' for recipient in recipients)
-    
-    if settings.SMTP_USE_TLS or settings.SMTP_USE_SSL:
-        context = ssl.create_default_context()
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-    
-    email_message = settings.EMAIL_MESSAGE.format(sender=sender,to=recipient_str,subject=subject,message=message)
-
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        if settings.SMTP_USE_TLS:
-            server.starttls(context=context)
-        if settings.DEBUG:
-            server.set_debuglevel(True)
-        server.sendmail(sender, recipients, email_message)
-    
 def snmp_get(url,port,community_string,mib):
     value = None
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -95,11 +82,12 @@ vim.ResourcePool
 vim.Folder
 vim.Network
 """
-def retrieve_content(service_instance,vim_types):
+def retrieve_content(service_instance,*vim_types):
+    vim_type_list = [getattr(vim,vim_type) for vim_type in vim_types]
     content = service_instance.RetrieveContent()
     container = content.viewManager.CreateContainerView(
         content.rootFolder,
-        vim_types,
+        vim_type_list,
         True)
         
     view = container.view

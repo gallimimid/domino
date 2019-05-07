@@ -1,6 +1,14 @@
 from django.db import models
 import uuid
 
+class Key(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=128)
+    
+    def __str__(self):
+        return self.name
+
+
 class EventDefinition(models.Model):
 
     SEVERITY_CHOICES = (
@@ -19,6 +27,7 @@ class EventDefinition(models.Model):
     message = models.CharField(max_length=256)
     severity = models.CharField(max_length=1,choices=SEVERITY_CHOICES)
     condition = models.CharField(max_length=2,choices=CONDITION_CHOICES)
+    retriggerable = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -39,20 +48,21 @@ class Trigger(models.Model):
     )
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    key = models.CharField(max_length=128)
+    key = models.ForeignKey(Key, on_delete=models.CASCADE)
     operator = models.CharField(max_length=3,choices=OPERATOR_CHOICES)
     value = models.CharField(max_length=128)
     hysteresis = models.DurationField()
     event_definition = models.ForeignKey(EventDefinition, on_delete=models.CASCADE)
 
     def __str__(self):
-        return '{} - {} - {}'.format(self.key,self.operator,self.value)
+        return '{} {} {}'.format(self.key,self.operator,self.value)
 
 class Event(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     time_stamp = models.DateTimeField(auto_now_add=True)
     event_definition = models.ForeignKey(EventDefinition, on_delete=models.CASCADE)
     device = models.ForeignKey('devices.Device', on_delete=models.CASCADE)
+    triggered = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-time_stamp']
@@ -63,7 +73,7 @@ class Event(models.Model):
 class Measure(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     time_stamp = models.DateTimeField(auto_now_add=True)
-    key = models.CharField(max_length=128)
+    key = models.ForeignKey(Key, on_delete=models.CASCADE)
     value = models.CharField(max_length=128)
     device = models.ForeignKey('devices.Device', on_delete=models.CASCADE)
     
@@ -71,4 +81,6 @@ class Measure(models.Model):
         ordering = ['-time_stamp']
 
     def __str__(self):
-        return '{} - {} - {} - {}'.format(self.device,self.key,self.value,self.time_stamp)
+        return '{} - {} - {} - {}'.format(self.device,self.key.name,self.value,self.time_stamp)
+
+measures = {}

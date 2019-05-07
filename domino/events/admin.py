@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import EventDefinition, Trigger, Event, Measure
+from events.models import *
 
 class TriggerInline(admin.TabularInline):
     model = Trigger
@@ -11,3 +11,4 @@ class EventDefinitionAdmin(admin.ModelAdmin):
 admin.site.register(Trigger)
 admin.site.register(Event)
 admin.site.register(Measure)
+admin.site.register(Key)
