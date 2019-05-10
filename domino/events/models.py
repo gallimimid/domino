@@ -61,14 +61,14 @@ class Event(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     time_stamp = models.DateTimeField(auto_now_add=True)
     event_definition = models.ForeignKey(EventDefinition, on_delete=models.CASCADE)
-    device = models.ForeignKey('devices.Device', on_delete=models.CASCADE)
+    device_group = models.ForeignKey('devices.Group', on_delete=models.CASCADE, null=True)
     triggered = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-time_stamp']
 
     def __str__(self):
-        return '{} - {} - {}'.format(self.time_stamp,self.device,self.event_definition)
+        return '{} - {} - {}'.format(self.time_stamp,self.device_group,self.event_definition)
 
 class Measure(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
