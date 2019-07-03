@@ -1,6 +1,15 @@
 from django.db import models
+from django.apps import apps
 import uuid
 
+class Connector(models.Model):
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    connector = models.CharField(max_length=128)
+    
+    def __str__(self):
+        return self.connector
+        
 class Product(models.Model):
 
     TYPE_CHOICES = (
@@ -20,12 +29,21 @@ class Product(models.Model):
         return self.name
 
 class Group(models.Model):
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128)
+    connector = models.ForeignKey(Connector, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.name
-
+        
+    def get_config_id(self):
+        config = getattr(self,self.connector.connector,None)
+        if config:
+            return config.id
+        else:
+            return None
+    
 class Device(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

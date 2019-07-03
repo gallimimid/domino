@@ -45,14 +45,11 @@ def trigger_event(group_name, event_name):
     event_write = Event(event_definition = event_definition, device_group = event_source)
     event_write.save()
     # completion of automation writes an event which could trigger another automation
-    # need a way to chain automations at the db level, not hard coded
-    # possibly an alternate field for automation as event source? 
-    # either or, just like events can be triggered by view or evaluate_measures
     automations = Automation.objects.filter(cause=event_definition,source_group=event_source)
     for automation in automations:
         dummy_result = [None]
         event_target = automation.target_group
-        config_id = str(event_target.vmomiconfig.id)
+        config_id = str(event_target.get_config_id())
         # initialize automation chain with triggered automation
         automation_chain = signature(
             automation.effect,
